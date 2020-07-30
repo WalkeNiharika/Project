@@ -1,0 +1,88 @@
+#include <ESP8266WiFi.h>
+#include <Blynk.h>
+#define BLYNK_PRINT Serial
+#include <BlynkSimpleEsp8266.h>
+const int trigPin = 4;
+const int echoPin = 0;
+const int ledPin1 = 5;
+const int ledPin2 =13;
+const int buzzer = 16;
+// defines variables
+long duration;
+int distance;
+// You should get Auth Token in the Blynk App.
+// Go to the Project Settings (nut icon).
+char auth[] = "yul20SodNFg_GleJkr95xywh85M-3Wjm";
+
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "LESNAR";
+char pass[] = "yashsingh";
+WidgetLCD lcd(V1);
+
+void setup()
+{
+  // Debug console
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT);
+  pinMode(buzzer,OUTPUT);
+  pinMode(ledPin1,OUTPUT);
+  pinMode(ledPin2,OUTPUT);// Sets the echoPin as an Input
+  Serial.begin(9600); // Starts the serial communication
+  Blynk.begin(auth, ssid, pass);
+  // You can also specify server:
+  //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 8442);
+  //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8442);
+
+  lcd.clear(); //Use it to clear the LCD Widget
+  lcd.print(0, 0, "Distance in cm"); // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+  // Please use timed events when LCD printintg in void loop to avoid sending too many commands
+  // It will cause a FLOOD Error, and connection will be dropped
+}
+
+void loop()
+{
+  lcd.clear();
+  lcd.print(0, 0, "Distance in cm");
+ 
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+// Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+// Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+// Calculating the distance
+  distance= duration*0.034/2;
+// Prints the distance on the Serial Monitor
+  Serial.print("Distance: ");
+  Serial.println(distance);
+ // use: (position X: 0-15, position Y: 0-1, "Message you want to print")
+  lcd.print(7,1,distance);
+ 
+ if(distance<15)
+  {
+tone(buzzer,2000);
+   digitalWrite(buzzer,HIGH);
+   delay(1000);// Send 1KHz sound signal...
+    digitalWrite(ledPin1, LOW);
+    digitalWrite(ledPin2, HIGH);
+   
+    delay(1700);
+    noTone(buzzer); // Stop sound...
+  }
+ 
+   else
+  {
+    digitalWrite(buzzer, LOW);
+    digitalWrite(ledPin2, LOW);
+    digitalWrite(ledPin1, HIGH);
+    delay(100);
+    digitalWrite(buzzer, LOW);
+  }
+  Blynk.run();
+
+  delay(3500);
+
+}
